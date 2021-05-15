@@ -30,6 +30,8 @@ module.exports = {
 					username: user.username,
 					userHandle: user.user_handle,
 					createdate: user.createdate,
+					image_url: user.image_url,
+					online: user.online,
 				};
 			} catch (err) {
 				if (err.message === "No user found") {
@@ -66,6 +68,7 @@ module.exports = {
 						userHandle: user.user_handle,
 						username: user.username,
 						id: parseInt(user.id),
+						image_url: user.image_url,
 					},
 					"JWT SECRET HERE",
 					{
@@ -79,6 +82,8 @@ module.exports = {
 					username: user.username,
 					userHandle: user.user_handle,
 					createdate: user.createdate,
+					image_url: user.image_url,
+					online: user.online,
 					token,
 				};
 			} catch (err) {
@@ -97,6 +102,7 @@ module.exports = {
 				email: user.email,
 				username: user.username,
 				userHandle: user.userHandle,
+				image_url: user.image_url,
 			};
 		},
 	},
@@ -121,6 +127,8 @@ module.exports = {
 						username,
 						user_handle: userHandle,
 						createdate: new Date(),
+						image_url:
+							"https://firebasestorage.googleapis.com/v0/b/concord-6e42f.appspot.com/o/icons8-cat-profile-96.png?alt=media&token=ca420c46-36af-4c15-a6cd-58f20080c01d",
 					},
 				});
 				console.log(new Date(newUser.createdate).toISOString());
@@ -130,6 +138,8 @@ module.exports = {
 					username: newUser.username,
 					userHandle: newUser.user_handle,
 					createdate: new Date(newUser.createdate).toISOString(),
+					image_url: newUser.image_url,
+					online: newUser.online,
 				};
 			} catch (err) {
 				if (err instanceof Prisma.PrismaClientKnownRequestError) {
@@ -143,6 +153,30 @@ module.exports = {
 				}
 				throw new Error("Internal server error");
 			}
+		},
+
+		updateOnlineStatus: async (
+			parent,
+			{ isOnline },
+			{ prisma, user },
+			info
+		) => {
+			if (!user) throw new Error("Unauthenticated");
+
+			const u = await prisma.users.update({
+				where: {
+					id: parseInt(user.id),
+				},
+				data: {
+					online: isOnline,
+				},
+			});
+
+			return {
+				...u,
+				id: parseInt(u.id),
+				userHandle: u.user_handle,
+			};
 		},
 	},
 };

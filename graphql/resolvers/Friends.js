@@ -48,6 +48,8 @@ module.exports = {
 						username: frien.username,
 						userHandle: frien.user_handle,
 						createdate: frien.createdate,
+						image_url: frien.image_url,
+						online: frien.online,
 					};
 				});
 			};
@@ -102,6 +104,8 @@ module.exports = {
 							username: friend.username,
 							userHandle: friend.user_handle,
 							createdate: friend.createdate,
+							image_url: friend.image_url,
+							online: friend.online,
 						};
 					}
 					return null;

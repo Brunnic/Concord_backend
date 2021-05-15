@@ -8,6 +8,8 @@ module.exports = gql`
 		userHandle: String!
 		createdate: String
 		token: String
+		image_url: String
+		online: Boolean!
 	}
 	type UserInfo {
 		email: String!
@@ -33,6 +35,7 @@ module.exports = gql`
 	type Mutation {
 		newUser(data: NewUserInput): User!
 		addFriend(friendHandle: String!): User!
+		updateOnlineStatus(isOnline: Boolean!): User
 		sendMessage(message: String!, to_id: Int!): Message!
 	}
 	type Subscription {
