@@ -92,7 +92,12 @@ module.exports = {
 		me: async (parent, args, { user }, info) => {
 			if (!user) throw Error("Unauthenticated");
 
-			return user;
+			return {
+				id: parseInt(user.id),
+				email: user.email,
+				username: user.username,
+				userHandle: user.userHandle,
+			};
 		},
 	},
 

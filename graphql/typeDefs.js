@@ -24,7 +24,7 @@ module.exports = gql`
 	type Query {
 		user(id: ID!): User!
 		loginUser(email: String!, password: String!): User!
-		me: UserInfo!
+		me: User!
 		getFriends: [User!]!
 		getConversations: [User]!
 		searchFriend(userHandle: String!): [User]!
@@ -37,6 +37,7 @@ module.exports = gql`
 	}
 	type Subscription {
 		newMessage(friend: ID!): Message!
+		receivedMessage(thisUser: ID!): User!
 	}
 
 	input NewUserInput {

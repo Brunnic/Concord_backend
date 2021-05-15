@@ -1,3 +1,7 @@
+const { withFilter } = require("apollo-server");
+
+const { pubsub } = require("../../utils/pubsub");
+
 module.exports = {
 	Query: {
 		searchFriend: async (parent, { userHandle }, { user, prisma }, info) => {
@@ -13,7 +17,7 @@ module.exports = {
 			return users.map((u) => ({
 				...u,
 				id: parseInt(u.id),
-				userHandle: u.user_handle
+				userHandle: u.user_handle,
 			}));
 		},
 
@@ -58,38 +62,62 @@ module.exports = {
 				where: {
 					OR: [
 						{
-							userid: parseInt(user.id)
+							userid: parseInt(user.id),
 						},
 						{
-							friendid: parseInt(user.id)
-						}
-					]
-				}
+							friendid: parseInt(user.id),
+						},
+					],
+				},
 			});
 
-			const getAllConversations = () => {
-				return friendships.map(async (f) => {
-					let friend = (f.userid == user.id ? await prisma.users.findUnique({
-						where: {
-							id: f.friendid,
+			const messages = await prisma.messages.groupBy({
+				by: ["from_id", "to_id"],
+				where: {
+					OR: [
+						{
+							from_id: parseInt(user.id),
 						},
-					}) : await prisma.users.findUnique({
-						where: {
-							id: f.userid,
+						{
+							to_id: parseInt(user.id),
 						},
-					}))
-					return {
-						id: parseInt(friend.id),
-						email: friend.email,
-						username: friend.username,
-						userHandle: friend.user_handle,
-						createdate: friend.createdate,
-					};
+					],
+				},
+			});
+
+			const getAllConversations = async () => {
+				const convos = await messages.map(async (f) => {
+					let friend = await prisma.users.findFirst({
+						where: {
+							id: f.from_id,
+							NOT: {
+								id: parseInt(user.id),
+							},
+						},
+					});
+					if (friend) {
+						return {
+							id: parseInt(friend.id),
+							email: friend.email,
+							username: friend.username,
+							userHandle: friend.user_handle,
+							createdate: friend.createdate,
+						};
+					}
+					return null;
 				});
-			}
+
+				let results = await Promise.all(convos);
+
+				results = results.filter((c) => {
+					return c != null;
+				});
+
+				return results;
+			};
 
 			return await getAllConversations();
-		}
+		},
 	},
 	Mutation: {
 		addFriend: async (parent, { friendHandle }, { user, prisma }, info) => {
@@ -119,6 +147,17 @@ module.exports = {
 			});
 
 			return theFriend;
+		},
+	},
+
+	Subscription: {
+		receivedMessage: {
+			subscribe: withFilter(
+				() => pubsub.asyncIterator(["MESSAGE_RECEIVED"]),
+				(payload, variables) => {
+					return payload.receivedMessage.to_id == variables.thisUser;
+				}
+			),
 		},
 	},
 };

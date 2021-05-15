@@ -1,7 +1,5 @@
-const { PubSub, withFilter } = require("apollo-server");
-
-const pubsub = new PubSub();
-
+const { withFilter } = require("apollo-server");
+const { pubsub } = require("../../utils/pubsub");
 module.exports = {
 	Query: {
 		getMessages: async (parent, { friend }, { prisma, user }, info) => {
@@ -51,6 +49,42 @@ module.exports = {
 					message: m.message,
 				},
 			});
+
+			pubsub.publish("MESSAGE_RECEIVED", {
+				receivedMessage: {
+					...user,
+					to_id,
+				},
+			});
+
+			// const f = await prisma.friends.findMany({
+			// 	where: {
+			// 		OR: [
+			// 			{
+			// 				userid: parseInt(user.id),
+			// 				friendid: parseInt(to_id),
+			// 			},
+			// 			{
+			// 				userid: parseInt(to_id),
+			// 				friendid: parseInt(user.id),
+			// 			},
+			// 		],
+			// 	},
+			// });
+
+			// console.log(f);
+
+			// if (!f || f.length < 0) {
+			// 	await prisma.friends.create({
+			// 		userid: parseInt(user.id),
+			// 		friendid: parseInt(to_id),
+			// 	});
+
+			// 	await prisma.friends.create({
+			// 		userid: parseInt(to_id),
+			// 		friendid: parseInt(user.id),
+			// 	});
+			// }
 
 			return {
 				id: parseInt(m.id),
