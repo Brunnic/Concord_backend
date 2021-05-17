@@ -3,6 +3,17 @@ const { ApolloServer } = require("apollo-server-express");
 const express = require("express");
 const http = require("http");
 
+const admin = require("firebase-admin");
+
+const serviceAccount = require("./serviceAccountKey.json");
+
+admin.initializeApp({
+	credential: admin.credential.cert(serviceAccount),
+	storageBucket: "concord-6e42f.appspot.com",
+});
+
+const bucket = admin.storage().bucket();
+
 const typeDefs = require("./graphql/typeDefs");
 const resolvers = require("./graphql/resolvers");
 
@@ -18,6 +29,7 @@ async function startServer() {
 			return {
 				...auth(ctx),
 				prisma,
+				bucket,
 			};
 		},
 		subscriptions: {

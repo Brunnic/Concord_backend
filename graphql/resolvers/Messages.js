@@ -57,35 +57,6 @@ module.exports = {
 				},
 			});
 
-			// const f = await prisma.friends.findMany({
-			// 	where: {
-			// 		OR: [
-			// 			{
-			// 				userid: parseInt(user.id),
-			// 				friendid: parseInt(to_id),
-			// 			},
-			// 			{
-			// 				userid: parseInt(to_id),
-			// 				friendid: parseInt(user.id),
-			// 			},
-			// 		],
-			// 	},
-			// });
-
-			// console.log(f);
-
-			// if (!f || f.length < 0) {
-			// 	await prisma.friends.create({
-			// 		userid: parseInt(user.id),
-			// 		friendid: parseInt(to_id),
-			// 	});
-
-			// 	await prisma.friends.create({
-			// 		userid: parseInt(to_id),
-			// 		friendid: parseInt(user.id),
-			// 	});
-			// }
-
 			return {
 				id: parseInt(m.id),
 				from_id: parseInt(m.from_id),

@@ -16,5 +16,6 @@ module.exports = {
 	Subscription: {
 		...Messages.Subscription,
 		...Friends.Subscription,
+		...Users.Subscription,
 	},
 };

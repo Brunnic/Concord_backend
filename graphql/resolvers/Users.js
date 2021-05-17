@@ -1,6 +1,9 @@
 const bcrypt = require("bcryptjs");
-const { Prisma } = require("@prisma/client");
+const { Prisma, prisma } = require("@prisma/client");
 const jwt = require("jsonwebtoken");
+const { withFilter } = require("apollo-server");
+
+const { pubsub } = require("../../utils/pubsub");
 
 const INVALID_CREDENTIALS = "invalid_credentials";
 class InvalidCredentialsError extends Error {
@@ -94,15 +97,22 @@ module.exports = {
 				throw new Error("Internal server error");
 			}
 		},
-		me: async (parent, args, { user }, info) => {
+		me: async (parent, args, { user, prisma }, info) => {
 			if (!user) throw Error("Unauthenticated");
 
+			const me = await prisma.users.findUnique({
+				where: {
+					id: parseInt(user.id),
+				},
+			});
+
 			return {
-				id: parseInt(user.id),
-				email: user.email,
-				username: user.username,
-				userHandle: user.userHandle,
-				image_url: user.image_url,
+				id: parseInt(me.id),
+				email: me.email,
+				username: me.username,
+				userHandle: me.user_handle,
+				image_url: me.image_url,
+				online: me.online,
 			};
 		},
 	},
@@ -172,11 +182,69 @@ module.exports = {
 				},
 			});
 
+			pubsub.publish("USER_UPDATED_STATUS", {
+				onUserUpdateOnlineStatus: {
+					...u,
+					id: parseInt(u.id),
+					userHandle: u.user_handle,
+				},
+			});
+
 			return {
 				...u,
 				id: parseInt(u.id),
 				userHandle: u.user_handle,
 			};
+		},
+
+		updateUser: async (
+			parent,
+			{ email, username, image },
+			{ prisma, user },
+			info
+		) => {
+			if (!user) throw new Error("Unauthenticated");
+
+			if (email == "") email = undefined;
+			if (username == "") username = undefined;
+
+			try {
+				const updatedUser = await prisma.users.update({
+					where: {
+						id: parseInt(user.id),
+					},
+					data: {
+						email,
+						username,
+						image_url: image,
+					},
+				});
+
+				return {
+					id: parseInt(updatedUser.id),
+					email: updatedUser.email,
+					username: updatedUser.username,
+					userHandle: updatedUser.userHandle,
+					image_url: updatedUser.image_url,
+					online: updatedUser.online,
+				};
+			} catch (err) {
+				console.log(err);
+				throw new Error("Internal server error");
+			}
+		},
+	},
+
+	Subscription: {
+		onUserUpdateOnlineStatus: {
+			subscribe: withFilter(
+				() => pubsub.asyncIterator(["USER_UPDATED_STATUS"]),
+				(payload, variables) => {
+					return (
+						payload.onUserUpdateOnlineStatus.id == parseInt(variables.theUser)
+					);
+				}
+			),
 		},
 	},
 };

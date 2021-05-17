@@ -37,10 +37,12 @@ module.exports = gql`
 		addFriend(friendHandle: String!): User!
 		updateOnlineStatus(isOnline: Boolean!): User
 		sendMessage(message: String!, to_id: Int!): Message!
+		updateUser(email: String, username: String, image: String): User!
 	}
 	type Subscription {
 		newMessage(friend: ID!): Message!
 		receivedMessage(thisUser: ID!): User!
+		onUserUpdateOnlineStatus(theUser: ID!): User!
 	}
 
 	input NewUserInput {
@@ -48,5 +50,11 @@ module.exports = gql`
 		username: String!
 		userHandle: String!
 		password: String!
+	}
+
+	input UpdateUserInput {
+		email: String
+		username: String
+		image: Upload
 	}
 `;

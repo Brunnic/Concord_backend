@@ -6,7 +6,8 @@
 	"scripts": {
 		"dev": "nodemon app.js",
 		"start": "node app.js",
-		"heroku-postbuild": "npx prisma introspect && npx prisma generate"
+		"heroku-postbuild": "npx prisma introspect && npx prisma generate",
+		"preinstall": "npx npm-force-resolutions"
 	},
 	"keywords": [],
 	"author": "",
@@ -17,12 +18,18 @@
 		"apollo-server-express": "^2.24.0",
 		"bcryptjs": "^2.4.3",
 		"express": "^4.17.1",
+		"firebase-admin": "^9.8.0",
 		"graphql": "^15.5.0",
 		"jsonwebtoken": "^8.5.1",
-		"subscriptions-transport-ws": "^0.9.18"
+		"subscriptions-transport-ws": "^0.9.18",
+		"uuid-v4": "^0.1.0"
 	},
 	"devDependencies": {
 		"nodemon": "^2.0.7",
 		"prisma": "^2.22.1"
+	},
+	"resolutions": {
+		"**/**/fs-capacitor": "^6.2.0",
+		"**/graphql-upload": "^11.0.0"
 	}
 }
